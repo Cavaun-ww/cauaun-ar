@@ -169,9 +169,11 @@ AFRAME.registerComponent('url-video-overlay', {
   init: function() {
     var srcs = [this.data.src];
     if (this.data.src2) srcs.push(this.data.src2);
+    var self = this;
+    var aspect = 16 / 9;
 
-    // Pre-create video elements for both sources
-    this._videos = srcs.map(function(src) {
+    // Create a video element AND its own texture for each source
+    this._pairs = srcs.map(function(src) {
       var v = document.createElement('video');
       v.src = src;
       v.crossOrigin = 'anonymous';
@@ -184,39 +186,34 @@ AFRAME.registerComponent('url-video-overlay', {
       v.load();
       v.style.cssText = 'position:fixed;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
       document.body.appendChild(v);
-      return v;
+      var tex = new THREE.VideoTexture(v);
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      return { video: v, texture: tex };
     });
 
-    this._active = null;
-    var self = this;
-    var aspect = 16 / 9;
-    var texture = new THREE.VideoTexture(this._videos[0]);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
+    // Start with first pair's texture
     var geo = new THREE.PlaneGeometry(1, 1 / aspect);
-    var mat = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
-    var mesh = new THREE.Mesh(geo, mat);
+    this._mat = new THREE.MeshBasicMaterial({ map: this._pairs[0].texture, side: THREE.DoubleSide });
+    var mesh = new THREE.Mesh(geo, this._mat);
     this.el.setObject3D('vid', mesh);
-    this._texture = texture;
-    this._mat = mat;
+    this._active = null;
 
     var targetEl = this.el.parentNode;
     targetEl.addEventListener('targetFound', function() {
-      // Pause any currently active video
       if (self._active) { self._active.pause(); self._active.currentTime = 0; }
-      // Pick randomly
-      var picked = self._videos[Math.floor(Math.random() * self._videos.length)];
-      self._active = picked;
-      self._texture.image = picked;
-      self._texture.needsUpdate = true;
-      picked.play().catch(function(){});
+      var pair = self._pairs[Math.floor(Math.random() * self._pairs.length)];
+      self._active = pair.video;
+      self._mat.map = pair.texture;
+      self._mat.needsUpdate = true;
+      pair.video.play().catch(function(){});
     });
     targetEl.addEventListener('targetLost', function() {
       if (self._active) { self._active.pause(); }
     });
   },
   remove: function() {
-    this._videos.forEach(function(v) { v.pause(); v.src = ''; });
+    this._pairs.forEach(function(p) { p.video.pause(); p.video.src = ''; });
     this.el.removeObject3D('vid');
   }
 });
