@@ -241,7 +241,7 @@ function startAR() {
   arVid = document.createElement('video');
        arVid.src = 'https://raw.githubusercontent.com/cavaun-ww/cauaun-ar/main/cavaunad.m4v';
        arVid.crossOrigin = 'anonymous';
-       arVid.loop = true; arVid.muted = true; arVid.playsInline = true;
+       arVid.loop = true; arVid.muted = false; arVid.volume = 1; arVid.playsInline = true;
        arVid.setAttribute('playsinline','');
        arVid.setAttribute('webkit-playsinline','');
        arVid.preload = 'auto';
