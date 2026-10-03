@@ -280,7 +280,7 @@ function startAR() {
   scene.setAttribute('mindar-image',
     'imageTargetSrc: ' + mindBlobUrl +
     '; uiLoading: no; uiScanning: no; uiError: no' +
-    '; filterMinCF: 0.001; filterBeta: 10; warmupTolerance: 5; missTolerance: 5');
+    '; filterMinCF: 0.001; filterBeta: 0.001; warmupTolerance: 5; missTolerance: 5');
   scene.setAttribute('vr-mode-ui',                       'enabled: false');
   scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
   scene.setAttribute('renderer',                         'colorManagement: true; alpha: true;');
